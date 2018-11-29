@@ -14,6 +14,7 @@ class GetInfo(QObject):
     downloadFinished=Signal()
 
     def __init__(self):
+        super(GetInfo,self).__init__()
         self.movieQueue=Queue()
         self.movies=[]
         self.progress=True
