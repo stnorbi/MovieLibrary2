@@ -34,6 +34,7 @@ class PosterList(QListWidget):
         self.setMovement(QListWidget.Static)
 
         self.GetInfo=DB.GetInfo()
+        self.GetInfo.downloadFinished.connect(self.repaint)
 
     def refresh(self, movieList):
         self.clear()

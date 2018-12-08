@@ -4,6 +4,7 @@ import json, os, urllib2
 import tmdbsimple as tmdb
 from threading import Thread
 
+
 tmdb.API_KEY = '83cbec0139273280b9a3f8ebc9e35ca9'
 posterPathString = "https://image.tmdb.org/t/p/w300/"
 backdropPathString = "https://image.tmdb.org/t/p/w500/"
@@ -11,55 +12,53 @@ backdropPathString = "https://image.tmdb.org/t/p/w500/"
 dataFolder = os.path.expanduser('~/Documents/MovieLibrary/')
 
 class GetInfo(QObject):
-    downloadFinished=Signal()
+    downloadFinished = Signal()
 
     def __init__(self):
-        super(GetInfo,self).__init__()
-        self.movieQueue=Queue()
-        self.movies=[]
-        self.progress=True
-        self.currentDownload=None
+        super(GetInfo, self).__init__()
 
-    def setMovies(self,movieObjects): # itt allitom be a queue-t
-        self.movies=movieObjects
+        self.movieQueue = Queue()
+        self.progress = True
+        self.currentDownload = None
 
-        for obj in self.movies:
+    def setMovies(self, movieObjects):
+        for obj in movieObjects:
             self.movieQueue.put(obj)
 
         self.getData()
 
-
     def getData(self):
-        # start downloading progress
-        t=Thread(target=getInfoWorker,args=(self.movieQueue,self.downloadFinished))
+        # start downloadig progress
+        t = Thread(target=getInfoWorker, args=(self.movieQueue, self.downloadFinished))
+        t.start()
 
 
-def getInfoWorker(queue,signal):
+def getInfoWorker(queue, signal):
 
-    while not queue.empty:
-        movieObj=queue.get()
+    while not queue.empty():
+        movieObj = queue.get()
 
-        movieData=getMovieData(movieObj.name)
-
+        movieData = getMovieData(movieObj.name)
         movieObj.setData(movieData)
 
-        #process ready
+        # process ready
         queue.task_done()
         signal.emit()
-
 
 
 def getMovieData(movieTitle):
     if not os.path.exists(dataFolder):
         os.mkdir(dataFolder)
 
-    #get data from file if exists
+    # get data from file if exists
     if os.path.exists(dataFolder + movieTitle + "_data_.json"):
         with open(dataFolder + movieTitle + "_data_.json") as configFile:
             return json.load(configFile)
 
+
     search = tmdb.Search()
     search.movie(query=movieTitle)
+
     print "downloading movie data:", movieTitle
 
     result = search.results
@@ -69,15 +68,18 @@ def getMovieData(movieTitle):
             dataDict["poster_path"] = posterPathString + dataDict["poster_path"]
 
             # save poster
-            posterFile=downloadImage(dataDict["poster_path"], movieTitle + "_poster_")
-            dataDict["posterFile"]=posterFile
+            posterFile = downloadImage(dataDict["poster_path"], movieTitle + "_poster_")
+            dataDict["posterFile"] = posterFile
+
 
         if dataDict["backdrop_path"]:
             dataDict["backdrop_path"] = backdropPathString + dataDict["backdrop_path"]
 
             # download backdrop image
-            backdropFile=downloadImage(dataDict["backdrop_path"], movieTitle + "_backdrop_")
-            dataDict["backdropFile"]=backdropFile
+            backdropFile = downloadImage(dataDict["backdrop_path"], movieTitle + "_backdrop_")
+
+            dataDict["backdropFile"] = backdropFile
+
 
         # save data
         saveData(dataDict, movieTitle)
@@ -85,7 +87,6 @@ def getMovieData(movieTitle):
         return dataDict
 
     return {}
-
 
 def saveData(data, title):
     print "saving data for", title

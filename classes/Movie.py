@@ -40,8 +40,14 @@ class Movie():
             if "backdropFile" in self.data:
                 self.backdrop = self.data["backdropFile"]
 
+    def setData(self, dataDict):
+        self.data = dataDict
 
+        if "posterFile" in self.data:
+            self.poster = self.data["posterFile"]
 
+        if "backdropFile" in self.data:
+            self.backdrop = self.data["backdropFile"]
 
     def play(self):
         pass
