@@ -5,6 +5,7 @@ from utils import DB
 
 from classes.Movie import Movie
 
+
 class PosterView(QWidget):
     def __init__(self, mainWindow):
         super(PosterView, self).__init__()
@@ -40,14 +41,17 @@ class PosterList(QListWidget):
         self.clear()
 
         downloadDataList=[]
+        movieObjects=[]
 
         for file in movieList:
             movie = Movie(file)
+            movieObjects.append(movie)
 
             if not movie.data:
                 downloadDataList.append(movie)
 
-            posterItem = PosterItem(movie, self)
+        for m in sorted(movieObjects,key=lambda movieObject: movieObject.releaseDate, reverse=True):
+            posterItem = PosterItem(m, self)
 
         if downloadDataList:
             self.GetInfo.setMovies(downloadDataList)

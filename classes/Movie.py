@@ -1,6 +1,9 @@
-import os
+import os, json
 from utils import DB
 from utils import fileUtils
+
+
+dataFolder = os.path.expanduser('~/Documents/MovieLibrary/')
 
 class Movie():
     def __init__(self, filePath):
@@ -12,42 +15,49 @@ class Movie():
         self.name = os.path.basename(filePath).replace(ext, "")
 
         self.data = {}
-        self.releaseDate = "1986"
+        self.releaseDate = None
         self.poster = fileUtils.getIcon("collectingData.png")
         self.backdrop=None
         #self.poster = r"/media/norbert/Datas/Python/Python_Suli_Master/Master_02/megoldas/iconsAliens.jpg"
         self.favorited=True
 
     def getData(self):
-        data=DB.getMovieData(self.name)
+        #data=DB.getMovieData(self.name)
+        dataFile=DB.dataFolder + self.name + "_data_.json"
+        data=None
 
-        if data:
+        if os.path.exists(dataFile):
+            with open(dataFile) as configFile:
+                data= json.load(configFile)
+
             self.data=data
+            self.releaseDate=int(data["release_date"].split("-")[0])
+
             if "posterFile" in self.data:
                 self.poster=self.data["posterFile"]
 
             if "backdropFile" in self.data:
                 self.backdrop = self.data["backdropFile"]
 
-    def setMovie(self,dataDict):
-        self.data=dataDict
+    # def setMovie(self,dataDict):
+    #     self.data=dataDict
+    #
+    #     if data:
+    #         self.data=data
+    #         if "posterFile" in self.data:
+    #             self.poster=self.data["posterFile"]
+    #
+    #         if "backdropFile" in self.data:
+    #             self.backdrop = self.data["backdropFile"]
 
-        if data:
-            self.data=data
-            if "posterFile" in self.data:
-                self.poster=self.data["posterFile"]
-
-            if "backdropFile" in self.data:
-                self.backdrop = self.data["backdropFile"]
-
-    def setData(self, dataDict):
-        self.data = dataDict
-
-        if "posterFile" in self.data:
-            self.poster = self.data["posterFile"]
-
-        if "backdropFile" in self.data:
-            self.backdrop = self.data["backdropFile"]
+    # def setData(self, dataDict):
+    #     self.data = dataDict
+    #
+    #     if "posterFile" in self.data:
+    #         self.poster = self.data["posterFile"]
+    #
+    #     if "backdropFile" in self.data:
+    #         self.backdrop = self.data["backdropFile"]
 
     def play(self):
         pass

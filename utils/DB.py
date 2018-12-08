@@ -39,7 +39,7 @@ def getInfoWorker(queue, signal):
         movieObj = queue.get()
 
         movieData = getMovieData(movieObj.name)
-        movieObj.setData(movieData)
+        movieObj.getData()
 
         # process ready
         queue.task_done()
