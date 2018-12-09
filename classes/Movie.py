@@ -20,29 +20,28 @@ class Movie():
         self.poster = fileUtils.getIcon("collectingData.png")
         self.backdrop=None
         #self.poster = r"/media/norbert/Datas/Python/Python_Suli_Master/Master_02/megoldas/iconsAliens.jpg"
-        self.favorited=True
+        self.favorited=False
+
+
+    def setFavorited(self):
+        self.favorited=not self.favorited
+        data=self.data
+
+        data["favorited"]=self.favorited
+
+        self.saveData(self.data)
+        self.editData(self.data)
+
 
     def getData(self):
-        self.data=DB_API.getData(self.path)
-        self.poster=self.data["posterFile"]
-        self.backdrop=self.data["backdropFile"]
+        result=DB_API.getData(self.path)
 
-
-        # dataFile= dataDownloader.dataFolder + self.name + "_data_.json"
-        # data=None
-        #
-        # if os.path.exists(dataFile):
-        #     with open(dataFile) as configFile:
-        #         data= json.load(configFile)
-        #
-        #     self.data=data
-        #     self.releaseDate=int(data["release_date"].split("-")[0])
-        #
-        #     if "posterFile" in self.data:
-        #         self.poster=self.data["posterFile"]
-        #
-        #     if "backdropFile" in self.data:
-        #         self.backdrop = self.data["backdropFile"]
+        if result:
+            self.data=result
+            self._id=result["_id"]
+            self.poster=self.data["posterFile"]
+            self.backdrop=self.data["backdropFile"]
+            self.releaseDate=result["release_date"]
 
 
     def saveData(self,dataDict):
@@ -54,6 +53,12 @@ class Movie():
         self._id=DB_API.insertData(dataDict)
 
 
+    def editData(self, dataDict):
+        dataDict["_id"]=self._id
+        DB_API.editData(dataDict)
+
+
+
 
     def play(self):
         pass
@@ -62,4 +67,12 @@ class Movie():
         pass
 
     def delete(self):
-        pass
+        # # delete movie file
+        # os.remove(self.path)
+        #
+        # # delete image files
+        # os.remove(self.poster)
+        # os.remove(self.backdrop)
+
+        # delete database entry
+        DB_API.deleteData(self._id)

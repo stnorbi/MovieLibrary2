@@ -1,10 +1,9 @@
 from PySide.QtGui import QWidget, QVBoxLayout, QListWidget, QListWidgetItem, \
-    QLabel, QItemDelegate, QBrush, QPen, QColor, QPixmap, QStyle
+    QLabel, QItemDelegate, QBrush, QPen, QColor, QPixmap, QStyle, QMessageBox, QHBoxLayout, QPushButton
 from PySide.QtCore import QSize, Qt, QRect
 from utils import dataDownloader
 
 from classes.Movie import Movie
-
 
 class PosterView(QWidget):
     def __init__(self, mainWindow):
@@ -14,14 +13,27 @@ class PosterView(QWidget):
         mainlayout = QVBoxLayout(self)
         mainlayout.setContentsMargins(0, 0, 0, 0)
 
-        label = QLabel("Poster View")
-        mainlayout.addWidget(label)
+        toolbarLayout=QHBoxLayout()
+        toolbarLayout.setAlignment(Qt.AlignLeft)
+        mainlayout.addLayout(toolbarLayout)
+
+        favBtn=QPushButton("Fav")
+        favBtn.setMaximumWidth(50)
+        editBtn=QPushButton("Edit")
+        editBtn.setMaximumWidth(50)
+
+        toolbarLayout.addWidget(favBtn)
+        toolbarLayout.addWidget(editBtn)
 
         self.posterList = PosterList()
         mainlayout.addWidget(self.posterList)
 
+        favBtn.clicked.connect(self.posterList.setFavorited)
+
     def folderChangedAction(self, *args):
         self.posterList.refresh(args[0])
+
+
 
 class PosterList(QListWidget):
     def __init__(self):
@@ -36,6 +48,34 @@ class PosterList(QListWidget):
 
         self.GetInfo=dataDownloader.GetInfo()
         self.GetInfo.downloadFinished.connect(self.repaint)
+
+    def setFavorited(self):
+        selectedMovie=self.currentItem()
+
+        if not selectedMovie: return
+
+        selectedMovie.movieObject.setFavorited()
+
+
+    def keyPressEvent(self,event):
+        selectedMovie=self.currentItem()
+        if not selectedMovie: return
+
+        if event.key()==Qt.Key_Delete:
+            movieObject=selectedMovie.movieObject
+
+            msg=QMessageBox(self)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Do you Want to delete {}?".format(movieObject.name))
+            msg.setWindowTitle("Delete Movie")
+            msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            msg.show()
+
+            if msg.exec_()==QMessageBox.Ok:
+                selectedMovie.movieObject.delete()
+
+                self.takeItem(self.row(selectedMovie))
+
 
     def refresh(self, movieList):
         self.clear()
@@ -57,9 +97,11 @@ class PosterList(QListWidget):
             self.GetInfo.setMovies(downloadDataList)
 
 
+
 class PosterItem(QListWidgetItem):
     def __init__(self, movieObject, parent):
         super(PosterItem, self).__init__(parent)
+        self.movieObject=movieObject
 
         self.setSizeHint(QSize(320, 490))
         self.setData(Qt.UserRole, movieObject)
@@ -95,7 +137,9 @@ class PosterViewDelegate(QItemDelegate):
 
         # draw movie title
         titleRect = QRect(rect.x(), rect.bottom()-30, rect.width(), rect.height())
-        painter.drawText(titleRect, Qt.AlignHCenter, u"{0} ({1})".format(movie.name, movie.releaseDate))
+
+        releaseText="({})".format(movie.releaseDate.split("-")[0]) if movie.releaseDate else ""
+        painter.drawText(titleRect, Qt.AlignHCenter, u"{0} {1}".format(movie.name, releaseText))
 
         # draw favicon
         # if movie.favorited:
