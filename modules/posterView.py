@@ -1,7 +1,7 @@
 from PySide.QtGui import QWidget, QVBoxLayout, QListWidget, QListWidgetItem, \
     QLabel, QItemDelegate, QBrush, QPen, QColor, QPixmap, QStyle
 from PySide.QtCore import QSize, Qt, QRect
-from utils import DB
+from utils import dataDownloader
 
 from classes.Movie import Movie
 
@@ -34,7 +34,7 @@ class PosterList(QListWidget):
         self.setSelectionMode(QListWidget.ExtendedSelection)
         self.setMovement(QListWidget.Static)
 
-        self.GetInfo=DB.GetInfo()
+        self.GetInfo=dataDownloader.GetInfo()
         self.GetInfo.downloadFinished.connect(self.repaint)
 
     def refresh(self, movieList):

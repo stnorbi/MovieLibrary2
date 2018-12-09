@@ -39,27 +39,22 @@ def getInfoWorker(queue, signal):
         movieObj = queue.get()
 
         movieData = getMovieData(movieObj.name)
-        movieObj.getData()
 
         # process ready
         queue.task_done()
         signal.emit()
 
 
-def getMovieData(movieTitle):
+def getMovieData(movieObj):
     if not os.path.exists(dataFolder):
         os.mkdir(dataFolder)
 
-    # get data from file if exists
-    if os.path.exists(dataFolder + movieTitle + "_data_.json"):
-        with open(dataFolder + movieTitle + "_data_.json") as configFile:
-            return json.load(configFile)
 
 
     search = tmdb.Search()
-    search.movie(query=movieTitle)
+    search.movie(query=movieObj.name)
 
-    print "downloading movie data:", movieTitle
+    print "downloading movie data:", movieObj.name
 
     result = search.results
     if result:
@@ -68,7 +63,7 @@ def getMovieData(movieTitle):
             dataDict["poster_path"] = posterPathString + dataDict["poster_path"]
 
             # save poster
-            posterFile = downloadImage(dataDict["poster_path"], movieTitle + "_poster_")
+            posterFile = downloadImage(dataDict["poster_path"], movieObj.name + "_poster_")
             dataDict["posterFile"] = posterFile
 
 
@@ -76,17 +71,13 @@ def getMovieData(movieTitle):
             dataDict["backdrop_path"] = backdropPathString + dataDict["backdrop_path"]
 
             # download backdrop image
-            backdropFile = downloadImage(dataDict["backdrop_path"], movieTitle + "_backdrop_")
+            backdropFile = downloadImage(dataDict["backdrop_path"], movieObj.name + "_backdrop_")
 
             dataDict["backdropFile"] = backdropFile
 
 
         # save data
-        saveData(dataDict, movieTitle)
-
-        return dataDict
-
-    return {}
+        movieObj.saveData(dataDict)
 
 def saveData(data, title):
     print "saving data for", title

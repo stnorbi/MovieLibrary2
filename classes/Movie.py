@@ -1,6 +1,6 @@
 import os, json
-from utils import DB
-from utils import fileUtils
+from utils import dataDownloader
+from utils import fileUtils, DB_API
 
 
 dataFolder = os.path.expanduser('~/Documents/MovieLibrary/')
@@ -8,6 +8,7 @@ dataFolder = os.path.expanduser('~/Documents/MovieLibrary/')
 class Movie():
     def __init__(self, filePath):
         self._id = None
+        self.dbCollection="movies"
 
         self.path = filePath
 
@@ -22,42 +23,37 @@ class Movie():
         self.favorited=True
 
     def getData(self):
-        #data=DB.getMovieData(self.name)
-        dataFile=DB.dataFolder + self.name + "_data_.json"
-        data=None
+        self.data=DB_API.getData(self.path)
+        self.poster=self.data["posterFile"]
+        self.backdrop=self.data["backdropFile"]
 
-        if os.path.exists(dataFile):
-            with open(dataFile) as configFile:
-                data= json.load(configFile)
 
-            self.data=data
-            self.releaseDate=int(data["release_date"].split("-")[0])
+        # dataFile= dataDownloader.dataFolder + self.name + "_data_.json"
+        # data=None
+        #
+        # if os.path.exists(dataFile):
+        #     with open(dataFile) as configFile:
+        #         data= json.load(configFile)
+        #
+        #     self.data=data
+        #     self.releaseDate=int(data["release_date"].split("-")[0])
+        #
+        #     if "posterFile" in self.data:
+        #         self.poster=self.data["posterFile"]
+        #
+        #     if "backdropFile" in self.data:
+        #         self.backdrop = self.data["backdropFile"]
 
-            if "posterFile" in self.data:
-                self.poster=self.data["posterFile"]
 
-            if "backdropFile" in self.data:
-                self.backdrop = self.data["backdropFile"]
+    def saveData(self,dataDict):
+        dataDict["path"]=self.path
+        self.poster=dataDict["posterFile"]
+        self.backdrop=dataDict["backdropFile"]
 
-    # def setMovie(self,dataDict):
-    #     self.data=dataDict
-    #
-    #     if data:
-    #         self.data=data
-    #         if "posterFile" in self.data:
-    #             self.poster=self.data["posterFile"]
-    #
-    #         if "backdropFile" in self.data:
-    #             self.backdrop = self.data["backdropFile"]
+        # save data to mongoDb
+        self._id=DB_API.insertData(dataDict)
 
-    # def setData(self, dataDict):
-    #     self.data = dataDict
-    #
-    #     if "posterFile" in self.data:
-    #         self.poster = self.data["posterFile"]
-    #
-    #     if "backdropFile" in self.data:
-    #         self.backdrop = self.data["backdropFile"]
+
 
     def play(self):
         pass

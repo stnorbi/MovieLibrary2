@@ -1,7 +1,7 @@
 import os, json
 
 ICONPATH = os.path.dirname(__file__).replace("utils", "icons") + "/"
-configPath = os.path.dirname(__file__) + "\\config.json"
+configPath = os.path.dirname(__file__) + "/config.json"
 
 def getIcon(iconName):
     fileList = os.listdir(ICONPATH)
