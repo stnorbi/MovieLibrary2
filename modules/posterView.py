@@ -2,6 +2,7 @@ from PySide.QtGui import QWidget, QVBoxLayout, QListWidget, QListWidgetItem, \
     QLabel, QItemDelegate, QBrush, QPen, QColor, QPixmap, QStyle, QMessageBox, QHBoxLayout, QPushButton
 from PySide.QtCore import QSize, Qt, QRect
 from utils import dataDownloader
+import EditMovieDialog
 
 from classes.Movie import Movie
 
@@ -28,7 +29,10 @@ class PosterView(QWidget):
         self.posterList = PosterList()
         mainlayout.addWidget(self.posterList)
 
+
+
         favBtn.clicked.connect(self.posterList.setFavorited)
+        editBtn.clicked.connect(self.posterList.editMovie)
 
     def folderChangedAction(self, *args):
         self.posterList.refresh(args[0])
@@ -49,12 +53,21 @@ class PosterList(QListWidget):
         self.GetInfo=dataDownloader.GetInfo()
         self.GetInfo.downloadFinished.connect(self.repaint)
 
+        self.editMovieDialog=EditMovieDialog.EditMovieWindow(self)
+
     def setFavorited(self):
         selectedMovie=self.currentItem()
 
         if not selectedMovie: return
 
         selectedMovie.movieObject.setFavorited()
+
+    def editMovie(self):
+        selectedMovie=self.currentItem()
+        if not selectedMovie: return
+
+        self.editMovieDialog.setMovie(selectedMovie.movieObject)
+        self.editMovieDialog.show()
 
 
     def keyPressEvent(self,event):

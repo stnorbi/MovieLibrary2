@@ -44,19 +44,32 @@ def getInfoWorker(queue, signal):
         queue.task_done()
         signal.emit()
 
+def movieDBSearch(title):
+    search = tmdb.Search()
+    search.movie(query=title)
+
+    print "downloading movie data:", title
+
+    result = search.results
+
+    if result:
+        for i in result:
+            if i["poster_path"]:
+                i["poster_path"]=posterPathString + i["poster_path"]
+
+            if i["backdrop_path"]:
+                i["backdrop_path"]=backdropPathString + i["backdrop_path"]
+
+    return result
+
 
 def getMovieData(movieObj):
     if not os.path.exists(dataFolder):
         os.mkdir(dataFolder)
 
 
+    result = movieDBSearch(movieObj.name)
 
-    search = tmdb.Search()
-    search.movie(query=movieObj.name)
-
-    print "downloading movie data:", movieObj.name
-
-    result = search.results
     if result:
         dataDict = result[0]
         if dataDict["poster_path"]:
@@ -95,4 +108,5 @@ def downloadImage(imageLink, title):
     return dataFolder + title + ".jpg"
 
 if __name__ == "__main__":
-    getMovieData("Star Wars")
+   for i in movieDBSearch("Jaw"):
+       print i
